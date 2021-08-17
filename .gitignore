@@ -1,6 +1,7 @@
 # compiled output
 *.env
 *.mp4
+upload/
 /dist
 /node_modules
 

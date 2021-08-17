@@ -1,43 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, UpdateQuery } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterRequestDto } from 'src/auth/dto/register-request.dto';
-import { UserDocument } from 'src/user/schema/user.schema';
+import { Repository } from 'typeorm';
+import { User } from './entity/user.entity';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel('user') private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
 
-  async create({
-    username,
-    password,
-  }: RegisterRequestDto): Promise<UserDocument> {
-    const newUser: UserDocument = new this.userModel({
-      username,
+  async create({ username, password }: RegisterRequestDto) {
+    const newUser = this.userRepository.create({
       password,
+      username,
     });
-    await newUser.save();
-    return newUser;
+    return await this.userRepository.save(newUser);
   }
 
-  async findOneByUsername(username: string): Promise<UserDocument> {
-    return this.userModel.findOne({ username });
+  async findOneByUsername(username: string) {
+    return await this.userRepository.findOne({ where: { username } });
   }
-  async findById(id) {
-    return this.userModel.findById(id);
-  }
-
-  async updateOne(
-    _id: string | Types._ObjectId,
-    updateData: UpdateQuery<UserDocument>,
-  ) {
-    return this.userModel.updateOne({ _id }, updateData);
+  async findById(id: number) {
+    return this.userRepository.findOne(id);
   }
 
-  async updateByIds(
-    ids: Types._ObjectId[],
-    updateData: UpdateQuery<UserDocument>,
-  ) {
-    return this.userModel.updateMany({ _id: { $in: ids } }, updateData);
+  async updateOneBy(userUpdate: User) {
+    await this.userRepository.save({ ...userUpdate });
+  }
+
+  async updateByIds(ids: number[], updateData: User) {
+    return await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ ...updateData })
+      .where('id IN (:...ids)', { ids })
+      .execute();
   }
 }

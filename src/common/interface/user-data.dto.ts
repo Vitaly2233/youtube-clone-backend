@@ -1,6 +1,6 @@
-import { UserDocument } from 'src/user/schema/user.schema';
+import { User } from 'src/user/entity/user.entity';
 
 export interface IUserData {
-  readonly user?: UserDocument;
+  readonly user?: User;
   readonly token?: string;
 }

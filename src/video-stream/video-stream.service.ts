@@ -1,12 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { createReadStream, statSync } from 'fs';
 
-const CHUNK_SIZE = 10 ** 6;
-
 @Injectable()
 export class VideoStreamService {
-  async getVideo(res, range?: string) {
-    const path = 'test.mp4';
+  async getVideoStream(res, path: string, range?: string) {
     const stat = statSync(path);
     const fileSize = stat.size;
 

@@ -9,6 +9,7 @@ export default {
   SERVER_HOST: process.env.SERVER_HOST,
   DB: {
     DB_NAME: process.env.DATABASE_NAME,
+    DB_PORT: parseInt(process.env.DATABASE_PORT, 10),
   },
   JWT: {
     SECRET: process.env.JWT_SECRET,
