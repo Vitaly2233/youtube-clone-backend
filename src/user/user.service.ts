@@ -18,14 +18,19 @@ export class UserService {
     return await this.userRepository.save(newUser);
   }
 
-  async findOneByUsername(username: string) {
+  async findOneByUsername(username: string, showPassword?: boolean) {
+    if (showPassword)
+      return await this.userRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .getOne();
     return await this.userRepository.findOne({ where: { username } });
   }
   async findById(id: number) {
     return this.userRepository.findOne(id);
   }
 
-  async updateOneBy(userUpdate: User) {
+  async updateOne(userUpdate: User) {
     await this.userRepository.save({ ...userUpdate });
   }
 

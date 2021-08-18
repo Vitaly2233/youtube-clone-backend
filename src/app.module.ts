@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import config from './common/config';
 import { User } from './user/entity/user.entity';
 import { UserModule } from './user/user.module';
-import { VideoStreamModule } from './video-stream/video-stream.module';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
@@ -20,9 +20,11 @@ import { VideoStreamModule } from './video-stream/video-stream.module';
 
           username: 'root',
           password: '1234',
+          entities: ['dist/**/*.entity{.ts,.js}'],
           autoLoadEntities: true,
           synchronize: true,
-          retryDelay: 1000,
+
+          retryAttempts: 1,
         };
       },
     }),
@@ -31,7 +33,7 @@ import { VideoStreamModule } from './video-stream/video-stream.module';
     }),
     UserModule,
     AuthModule,
-    VideoStreamModule,
+    VideoModule,
   ],
 })
 export class AppModule {}
