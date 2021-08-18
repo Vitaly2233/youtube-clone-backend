@@ -12,8 +12,11 @@ export class Video {
   @Column()
   description?: string;
 
+  @Column({ default: false })
+  isPrivate?: boolean;
+
   @ManyToOne(() => User, (user) => user.videos)
-  user: User;
+  user?: User;
 
   @Column()
   userId: number;

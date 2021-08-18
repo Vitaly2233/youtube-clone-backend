@@ -17,11 +17,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { JwtGuard } from 'src/common/guard/jwt.guard';
 import { VideoService } from './video.service';
-import { CreateFileDto } from './dto/create-file.dto';
-import { UpdateFileDto } from './dto/update-file.dto';
+import { PrivateVideoGuard } from './guards/private-video.guard';
+import { CreateVideoDto } from './dto/create-video.dto';
 
 @Controller('api/video-stream')
-@UseGuards(JwtGuard)
+@UseGuards(JwtGuard, PrivateVideoGuard)
 export class VideoController implements OnApplicationBootstrap {
   constructor(private VideoService: VideoService) {}
   onApplicationBootstrap() {}
@@ -41,16 +41,12 @@ export class VideoController implements OnApplicationBootstrap {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
-    @Body() body: CreateFileDto,
+    @Body() body: CreateVideoDto,
   ) {
     const user = req.user;
-    const { name, description } = body;
-    return await this.VideoService.upload(
-      user.id,
-      name,
-      description,
-      file.buffer,
-    );
+    return await this.VideoService.upload(file.buffer, user.id, {
+      ...body,
+    });
   }
 
   @Delete(':id')
@@ -59,8 +55,7 @@ export class VideoController implements OnApplicationBootstrap {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() body: UpdateFileDto) {
-    const { description, name } = body;
-    return await this.VideoService.update(parseInt(id, 10), name, description);
+  async update(@Param('id') id: string, @Body() body) {
+    return await this.VideoService.update(parseInt(id, 10), { ...body });
   }
 }

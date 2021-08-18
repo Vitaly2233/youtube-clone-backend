@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   Injectable,
@@ -14,6 +15,8 @@ import {
   writeFileSync,
 } from 'fs';
 import { Repository } from 'typeorm';
+import { CreateVideoDto } from './dto/create-video.dto';
+import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video } from './entity/video.entity';
 
 @Injectable()
@@ -65,22 +68,24 @@ export class VideoService {
     }
   }
 
-  async create(name: string, description: string, userId: number) {
-    const newVideo = { name, description, userId };
+  async getById(id: number) {
+    if (!id) throw new BadRequestException('id is missing');
+    return await this.videoRepository
+      .createQueryBuilder('video')
+      .where('video.id = :id', { id })
+      .getOne();
+  }
+
+  async create(createVideo: Video) {
     try {
-      return await this.videoRepository.save(newVideo);
+      return await this.videoRepository.save({ ...createVideo });
     } catch (e) {
       throw new ConflictException('video is not saved');
     }
   }
 
   async delete(id: number, userId: number) {
-    const res = await this.videoRepository
-      .createQueryBuilder('video')
-      .where('video.id = :id', { id })
-      .getOne();
-    console.log(res);
-    return res;
+    console.log('here');
 
     // const result = await this.videoRepository.delete({ id });
 
@@ -90,14 +95,10 @@ export class VideoService {
     // unlinkSync(this.getPath(userId, id));
   }
 
-  async upload(
-    userId: number,
-    name: string,
-    description: string,
-    fileBuffer: Buffer,
-  ) {
-    const video = await this.create(name, description, userId);
-    const path = this.getPath(userId, video.id);
+  async upload(fileBuffer: Buffer, userId: number, dto: CreateVideoDto) {
+    const newVideo = await this.create({ ...dto, userId });
+
+    const path = this.getPath(userId, newVideo.id);
     try {
       mkdirSync(`./upload/${userId}`);
     } catch (e) {}
@@ -105,11 +106,11 @@ export class VideoService {
     if (!existsSync(path)) writeFileSync(path, fileBuffer);
     else throw new ConflictException('file with the name alreay exists');
 
-    return video;
+    return newVideo;
   }
 
-  async update(id: number, newName?: string, description?: string) {
-    return await this.videoRepository.save({ id, name: newName, description });
+  async update(id: number, dto: UpdateVideoDto) {
+    return await this.videoRepository.save({ ...dto, id });
   }
 
   private getPath(userId: number, videoId: number) {
