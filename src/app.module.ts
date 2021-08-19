@@ -7,6 +7,7 @@ import config from './common/config';
 import { User } from './user/entity/user.entity';
 import { UserModule } from './user/user.module';
 import { VideoModule } from './video/video.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { VideoModule } from './video/video.module';
     UserModule,
     AuthModule,
     VideoModule,
+    SubscriptionModule,
   ],
 })
 export class AppModule {}
