@@ -17,15 +17,18 @@ import { Repository } from 'typeorm';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video } from './entity/video.entity';
+import { PreviewService } from './preview.service';
+import { UploadFilesTypes } from './video.controller';
 
 @Injectable()
 export class VideoService {
   constructor(
     @InjectRepository(Video) private videoRepository: Repository<Video>,
+    private previewService: PreviewService,
   ) {}
 
   async getStream(response, userId: number, videoId: number, range?: string) {
-    const path = this.getPath(userId, videoId);
+    const path = this.getFilePath(userId, videoId);
     const stat = statSync(path);
     const fileSize = stat.size;
 
@@ -76,20 +79,23 @@ export class VideoService {
   }
 
   async upload(
-    fileBuffer: Buffer,
+    files: UploadFilesTypes,
     userId: number,
     isPrivate: boolean,
     dto: CreateVideoDto,
   ) {
     const newVideo = await this.create({ ...dto, userId, isPrivate });
 
-    const path = this.getPath(userId, newVideo.id);
+    const path = this.getFilePath(userId, newVideo.id);
     try {
       mkdirSync(`./upload/${userId}`);
     } catch (e) {}
 
-    if (!existsSync(path)) writeFileSync(path, fileBuffer);
+    if (!existsSync(path)) writeFileSync(path, files.video[0].buffer);
     else throw new ConflictException('file with the name alreay exists');
+    if (files.preview.length !== 0) {
+      this.previewService.upload(userId, newVideo.id, files.preview[0].buffer);
+    }
 
     return newVideo;
   }
@@ -106,14 +112,14 @@ export class VideoService {
     // const result = await this.videoRepository.delete({ id });
     // if (result.affected === 0)
     //   throw new NotFoundException('video was not found');
-    // unlinkSync(this.getPath(userId, id));
+    // unlinkSync(this.getFilePath(userId, id));
   }
 
   async update(id: number, dto: UpdateVideoDto) {
     return await this.videoRepository.save({ ...dto, id });
   }
 
-  private getPath(userId: number, videoId: number) {
-    return `./upload/${userId}/${videoId}.mp4`;
+  private getFilePath(userId: number, fileId: number) {
+    return `./upload/${userId}/${fileId}.mp4`;
   }
 }

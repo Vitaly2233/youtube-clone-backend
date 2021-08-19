@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import config from './common/config';
 import { User } from './user/entity/user.entity';
 import { UserModule } from './user/user.module';
-import { VideoModule } from './video/video.module';
+import { FileModule } from './file/file.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
@@ -34,7 +34,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     }),
     UserModule,
     AuthModule,
-    VideoModule,
+    FileModule,
     SubscriptionModule,
   ],
 })

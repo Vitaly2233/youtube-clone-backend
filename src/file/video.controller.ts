@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -12,16 +13,25 @@ import {
   Req,
   Res,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { JwtGuard } from 'src/common/guard/jwt.guard';
 import { VideoService } from './video.service';
 import { PrivateVideoGuard } from './guards/private-video.guard';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
+
+enum UploadEnum {
+  video,
+  preview,
+}
+export type UploadFilesTypes = {
+  [file in keyof typeof UploadEnum]: Array<Express.Multer.File>;
+};
 
 @Controller('api/video-stream')
 @UseGuards(JwtGuard, PrivateVideoGuard)
@@ -42,16 +52,22 @@ export class VideoController implements OnApplicationBootstrap {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'video', maxCount: 1 },
+      { name: 'preview', maxCount: 1 },
+    ]),
+  )
   async upload(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: UploadFilesTypes,
     @Query('isPrivate', ParseBoolPipe) isPrivate: boolean,
     @Req() req: Request,
     @Body() body: CreateVideoDto,
   ) {
     const user = req.user;
+    if (!files.video) throw new BadRequestException('video was not provaded');
 
-    return await this.VideoService.upload(file.buffer, user.id, isPrivate, {
+    return await this.VideoService.upload(files, user.id, isPrivate, {
       ...body,
     });
   }

@@ -5,10 +5,11 @@ import { MulterModule } from '@nestjs/platform-express';
 import { Video } from './entity/video.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from 'src/user/user.module';
+import { PreviewService } from './preview.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Video]), UserModule],
-  providers: [VideoService],
+  providers: [VideoService, PreviewService],
   controllers: [VideoController],
 })
-export class VideoModule {}
+export class FileModule {}
