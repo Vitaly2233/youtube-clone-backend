@@ -1,4 +1,9 @@
-import { OmitType } from '@nestjs/swagger';
-import { Video } from '../entity/video.entity';
+import { IsBoolean, IsString } from 'class-validator';
 
-export class CreateVideoDto extends OmitType(Video, ['user', 'id', 'userId']) {}
+export class CreateVideoDto {
+  @IsString()
+  name: string;
+
+  @IsString()
+  description: string;
+}

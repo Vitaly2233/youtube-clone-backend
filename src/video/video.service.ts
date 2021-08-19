@@ -3,7 +3,6 @@ import {
   ConflictException,
   HttpException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -76,27 +75,13 @@ export class VideoService {
       .getOne();
   }
 
-  async create(createVideo: Video) {
-    try {
-      return await this.videoRepository.save({ ...createVideo });
-    } catch (e) {
-      throw new ConflictException('video is not saved');
-    }
-  }
-
-  async delete(id: number, userId: number) {
-    console.log('here');
-
-    // const result = await this.videoRepository.delete({ id });
-
-    // if (result.affected === 0)
-    //   throw new NotFoundException('video was not found');
-
-    // unlinkSync(this.getPath(userId, id));
-  }
-
-  async upload(fileBuffer: Buffer, userId: number, dto: CreateVideoDto) {
-    const newVideo = await this.create({ ...dto, userId });
+  async upload(
+    fileBuffer: Buffer,
+    userId: number,
+    isPrivate: boolean,
+    dto: CreateVideoDto,
+  ) {
+    const newVideo = await this.create({ ...dto, userId, isPrivate });
 
     const path = this.getPath(userId, newVideo.id);
     try {
@@ -107,6 +92,21 @@ export class VideoService {
     else throw new ConflictException('file with the name alreay exists');
 
     return newVideo;
+  }
+
+  async create(createVideo: Video) {
+    try {
+      return await this.videoRepository.save({ ...createVideo });
+    } catch (e) {
+      throw new ConflictException('video is not saved');
+    }
+  }
+
+  async delete(id: number, userId: number) {
+    // const result = await this.videoRepository.delete({ id });
+    // if (result.affected === 0)
+    //   throw new NotFoundException('video was not found');
+    // unlinkSync(this.getPath(userId, id));
   }
 
   async update(id: number, dto: UpdateVideoDto) {

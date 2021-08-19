@@ -5,8 +5,10 @@ import {
   Get,
   OnApplicationBootstrap,
   Param,
+  ParseBoolPipe,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -19,6 +21,7 @@ import { JwtGuard } from 'src/common/guard/jwt.guard';
 import { VideoService } from './video.service';
 import { PrivateVideoGuard } from './guards/private-video.guard';
 import { CreateVideoDto } from './dto/create-video.dto';
+import { UpdateVideoDto } from './dto/update-video.dto';
 
 @Controller('api/video-stream')
 @UseGuards(JwtGuard, PrivateVideoGuard)
@@ -28,9 +31,11 @@ export class VideoController implements OnApplicationBootstrap {
 
   @Get(':id')
   getVideo(@Param('id') id: string, @Req() req: Request, @Res() res) {
+    const video = req.video;
+
     return this.VideoService.getStream(
       res,
-      req.user.id,
+      video.userId,
       parseInt(id, 10),
       req.headers.range,
     );
@@ -40,11 +45,13 @@ export class VideoController implements OnApplicationBootstrap {
   @UseInterceptors(FileInterceptor('file'))
   async upload(
     @UploadedFile() file: Express.Multer.File,
+    @Query('isPrivate', ParseBoolPipe) isPrivate: boolean,
     @Req() req: Request,
     @Body() body: CreateVideoDto,
   ) {
     const user = req.user;
-    return await this.VideoService.upload(file.buffer, user.id, {
+
+    return await this.VideoService.upload(file.buffer, user.id, isPrivate, {
       ...body,
     });
   }
@@ -55,7 +62,7 @@ export class VideoController implements OnApplicationBootstrap {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() body) {
+  async update(@Param('id') id: string, @Body() body: UpdateVideoDto) {
     return await this.VideoService.update(parseInt(id, 10), { ...body });
   }
 }
