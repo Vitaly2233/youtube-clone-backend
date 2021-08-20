@@ -3,6 +3,7 @@ import {
   ConflictException,
   HttpException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -17,8 +18,8 @@ import { Repository } from 'typeorm';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video } from './entity/video.entity';
-import { PreviewService } from './preview.service';
-import { UploadFilesTypes } from './video.controller';
+import { PreviewService } from '../preview/preview.service';
+import { UploadFilesTypes } from './type/upload.type';
 
 @Injectable()
 export class VideoService {
@@ -78,12 +79,24 @@ export class VideoService {
       .getOne();
   }
 
+  async getRecentVideosWithPhotos(count: number) {
+    if (count === 0) return [];
+    const videos = await this.videoRepository
+      .createQueryBuilder('video')
+      .leftJoinAndSelect('video.user', 'user')
+      .orderBy('video.uploadedAt')
+      // .where('video.isPrivate = false')
+      .take(count)
+      .getMany();
+  }
+
   async upload(
     files: UploadFilesTypes,
     userId: number,
     isPrivate: boolean,
     dto: CreateVideoDto,
   ) {
+    await this.validateUpload(dto.name, userId);
     const newVideo = await this.create({ ...dto, userId, isPrivate });
 
     const path = this.getFilePath(userId, newVideo.id);
@@ -109,10 +122,10 @@ export class VideoService {
   }
 
   async delete(id: number, userId: number) {
-    // const result = await this.videoRepository.delete({ id });
-    // if (result.affected === 0)
-    //   throw new NotFoundException('video was not found');
-    // unlinkSync(this.getFilePath(userId, id));
+    const result = await this.videoRepository.delete({ id });
+    if (result.affected === 0)
+      throw new NotFoundException('video was not found');
+    unlinkSync(this.getFilePath(userId, id));
   }
 
   async update(id: number, dto: UpdateVideoDto) {
@@ -121,5 +134,15 @@ export class VideoService {
 
   private getFilePath(userId: number, fileId: number) {
     return `./upload/${userId}/${fileId}.mp4`;
+  }
+
+  private async validateUpload(videoName: string, userId: number) {
+    const count = await this.videoRepository
+      .createQueryBuilder('video')
+      .where('video.name = :videoName', { videoName })
+      .andWhere('video.userId = :userId', { userId })
+      .getCount();
+    if (count !== 0)
+      throw new ConflictException(`you already have a video with the name`);
   }
 }

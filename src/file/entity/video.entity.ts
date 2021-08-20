@@ -17,6 +17,9 @@ export class Video {
   @Column({ default: false })
   isPrivate: boolean;
 
+  @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  uploadedAt?: Date;
+
   @ManyToOne(() => User, (user) => user.videos)
   user?: User;
 

@@ -8,6 +8,7 @@ import { User } from './user/entity/user.entity';
 import { UserModule } from './user/user.module';
 import { FileModule } from './file/file.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { PreviewModule } from './preview/preview.module';
 
 @Module({
   imports: [
@@ -29,13 +30,11 @@ import { SubscriptionModule } from './subscription/subscription.module';
         };
       },
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'static'),
-    }),
     UserModule,
     AuthModule,
     FileModule,
     SubscriptionModule,
+    PreviewModule,
   ],
 })
 export class AppModule {}

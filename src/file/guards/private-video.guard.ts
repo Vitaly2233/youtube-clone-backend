@@ -17,16 +17,13 @@ export class PrivateVideoGuard implements CanActivate {
     const params = req.params;
     const userId = req.user.id;
 
-    if (req.route.methods?.post) return true;
     const video = await this.videoService.getById(parseInt(params['id'], 10));
     if (!video) throw new NotFoundException('video is not found');
 
-    if (req.route.methods?.get) {
-      if (video.isPrivate && video.userId !== userId)
-        throw new ForbiddenException('private video');
-      req.video = video;
-      return true;
-    }
+    if (video.isPrivate && video.userId !== userId)
+      throw new ForbiddenException('private video');
+    req.video = video;
+
     if (video?.userId !== userId) return false;
 
     return true;
