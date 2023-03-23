@@ -26,8 +26,10 @@ import { PrivateVideoGuard } from './guards/private-video.guard';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { UploadFilesTypes } from './type/upload.type';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('api/video-stream')
+@ApiTags('Video')
 @UseGuards(JwtGuard)
 export class VideoController implements OnApplicationBootstrap {
   constructor(private videoService: VideoService) {}
@@ -75,19 +77,19 @@ export class VideoController implements OnApplicationBootstrap {
     });
   }
 
-  @Delete(':id')
-  async deleteVideo(
-    @Param('id', new ParseIntPipe()) id: number,
-    @Req() req: Request,
-  ) {
-    return await this.videoService.delete(id, req.user.id);
-  }
-
   @Patch(':id')
   async update(
     @Param('id', new ParseIntPipe()) id: number,
     @Body() body: UpdateVideoDto,
   ) {
     return await this.videoService.update(id, { ...body });
+  }
+
+  @Delete(':id')
+  async deleteVideo(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Req() req: Request,
+  ) {
+    return await this.videoService.delete(id, req.user.id);
   }
 }

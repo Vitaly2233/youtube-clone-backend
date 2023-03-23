@@ -1,10 +1,12 @@
 import { Controller, Get, Param, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtGuard } from 'src/common/guard/jwt.guard';
 import { PreviewService } from './preview.service';
 
 @Controller('api/preview')
 @UseGuards(JwtGuard)
+@ApiTags('Preview')
 export class PreviewController {
   constructor(private previewService: PreviewService) {}
 

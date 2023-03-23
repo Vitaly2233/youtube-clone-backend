@@ -20,8 +20,8 @@ import { PreviewModule } from './preview/preview.module';
           port: config.DB.DB_PORT,
           database: config.DB.DB_NAME,
 
-          username: 'root',
-          password: '1234',
+          username: config.DB.DB_USERNAME,
+          password: config.DB.DB_PASSWORD,
           entities: ['dist/**/*.entity{.ts,.js}'],
           autoLoadEntities: true,
           synchronize: true,

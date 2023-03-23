@@ -10,6 +10,8 @@ export default {
   DB: {
     DB_NAME: process.env.DATABASE_NAME,
     DB_PORT: parseInt(process.env.DATABASE_PORT, 10),
+    DB_USERNAME: process.env.DATABASE_USERNAME,
+    DB_PASSWORD: process.env.DATABASE_PASSWORD,
   },
   JWT: {
     SECRET: process.env.JWT_SECRET,
