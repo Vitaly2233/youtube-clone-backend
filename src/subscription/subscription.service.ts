@@ -1,9 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { Subscription } from './entity/subcription.entity';
+import { Subscription } from './entity/subscription.entity';
 
 @Injectable()
 export class SubscriptionService {
@@ -17,11 +15,11 @@ export class SubscriptionService {
     await this.validateUserSubscription(userId, subscribedOn);
 
     const newSubscription = this.subscriptionRepository.create({ ...dto });
-    return await this.subscriptionRepository.save(newSubscription);
+    return this.subscriptionRepository.save(newSubscription);
   }
 
   async getUserSubscriptions(userId: number) {
-    return await this.subscriptionRepository
+    return this.subscriptionRepository
       .createQueryBuilder('sub')
       .where('sub.userId = :id', { id: userId })
       .getMany();
@@ -29,7 +27,7 @@ export class SubscriptionService {
 
   async delete(id: number, userId: number) {
     await this.validateUnsubscription(id, userId);
-    return await this.subscriptionRepository.delete({ id });
+    return this.subscriptionRepository.delete({ id });
   }
 
   private async validateUserSubscription(userId: number, subscribedOn: number) {
@@ -44,8 +42,8 @@ export class SubscriptionService {
   }
 
   private async validateUnsubscription(id: number, userId: number) {
-    const subscribtion = await this.subscriptionRepository.findOne(id);
-    if (subscribtion.userId !== userId)
+    const subscription = await this.subscriptionRepository.findOne(id);
+    if (subscription.userId !== userId)
       throw new ForbiddenException(`you can delete only your subscriptions`);
   }
 }

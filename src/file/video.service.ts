@@ -48,7 +48,7 @@ export class VideoService {
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
 
       if (start >= fileSize)
-        throw new HttpException('Range not satisfilable', 416);
+        throw new HttpException('Range not appropriate', 416);
 
       const chunksize = end - start + 1;
       const file = createReadStream(path, { start, end });
@@ -73,7 +73,7 @@ export class VideoService {
 
   async getById(id: number) {
     if (!id) throw new BadRequestException('id is missing');
-    return await this.videoRepository
+    return this.videoRepository
       .createQueryBuilder('video')
       .where('video.id = :id', { id })
       .getOne();
@@ -105,7 +105,7 @@ export class VideoService {
     } catch (e) {}
 
     if (!existsSync(path)) writeFileSync(path, files.video[0].buffer);
-    else throw new ConflictException('file with the name alreay exists');
+    else throw new ConflictException('file with the name already exists');
     if (files.preview.length !== 0) {
       this.previewService.upload(userId, newVideo.id, files.preview[0].buffer);
     }
@@ -115,7 +115,7 @@ export class VideoService {
 
   async create(createVideo: Video) {
     try {
-      return await this.videoRepository.save({ ...createVideo });
+      return this.videoRepository.save({ ...createVideo });
     } catch (e) {
       throw new ConflictException('video is not saved');
     }
@@ -129,7 +129,7 @@ export class VideoService {
   }
 
   async update(id: number, dto: UpdateVideoDto) {
-    return await this.videoRepository.save({ ...dto, id });
+    return this.videoRepository.save({ ...dto, id });
   }
 
   private getFilePath(userId: number, fileId: number) {

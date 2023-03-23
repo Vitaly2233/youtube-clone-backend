@@ -26,11 +26,12 @@ import { PrivateVideoGuard } from './guards/private-video.guard';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { UploadFilesTypes } from './type/upload.type';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('api/video-stream')
 @ApiTags('Video')
 @UseGuards(JwtGuard)
+@ApiBearerAuth()
 export class VideoController implements OnApplicationBootstrap {
   constructor(private videoService: VideoService) {}
   onApplicationBootstrap() {}
@@ -72,7 +73,7 @@ export class VideoController implements OnApplicationBootstrap {
     const user = req.user;
     if (!files.video) throw new BadRequestException('video was not provaded');
 
-    return await this.videoService.upload(files, user.id, isPrivate, {
+    return this.videoService.upload(files, user.id, isPrivate, {
       ...body,
     });
   }
@@ -82,7 +83,7 @@ export class VideoController implements OnApplicationBootstrap {
     @Param('id', new ParseIntPipe()) id: number,
     @Body() body: UpdateVideoDto,
   ) {
-    return await this.videoService.update(id, { ...body });
+    return this.videoService.update(id, { ...body });
   }
 
   @Delete(':id')
@@ -90,6 +91,6 @@ export class VideoController implements OnApplicationBootstrap {
     @Param('id', new ParseIntPipe()) id: number,
     @Req() req: Request,
   ) {
-    return await this.videoService.delete(id, req.user.id);
+    return this.videoService.delete(id, req.user.id);
   }
 }
