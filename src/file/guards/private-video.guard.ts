@@ -6,11 +6,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { VideoService } from '../video.service';
+import { VideoStreamService } from '../video-stream.service';
 
 @Injectable()
 export class PrivateVideoGuard implements CanActivate {
-  constructor(private videoService: VideoService) {}
+  constructor(private videoService: VideoStreamService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request>();

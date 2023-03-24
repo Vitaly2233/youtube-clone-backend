@@ -22,7 +22,7 @@ import { PreviewService } from '../preview/preview.service';
 import { UploadFilesTypes } from './type/upload.type';
 
 @Injectable()
-export class VideoService {
+export class VideoStreamService {
   constructor(
     @InjectRepository(Video) private videoRepository: Repository<Video>,
     private previewService: PreviewService,

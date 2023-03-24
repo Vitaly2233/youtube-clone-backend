@@ -23,6 +23,7 @@ export class UserService {
       return this.userRepository
         .createQueryBuilder('user')
         .addSelect('user.password')
+        .where({ username })
         .getOne();
     return this.userRepository.findOne({ where: { username } });
   }

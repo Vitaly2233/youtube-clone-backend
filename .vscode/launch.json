@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "command": "npm run start:dev",
+      "name": "Run npm develop",
+      "request": "launch",
+      "type": "node-terminal",
+      "env": {
+        "DATABASE_SSL": "false",
+        "NODE_ENV": "development",
+      }
+    }
+  ]
+}

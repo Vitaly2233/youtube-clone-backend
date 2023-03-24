@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import config from './common/config';
-import { User } from './user/entity/user.entity';
 import { UserModule } from './user/user.module';
-import { FileModule } from './file/file.module';
+import { VideoStreamModule } from './file/video-stream.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PreviewModule } from './preview/preview.module';
 
@@ -32,7 +29,7 @@ import { PreviewModule } from './preview/preview.module';
     }),
     UserModule,
     AuthModule,
-    FileModule,
+    VideoStreamModule,
     SubscriptionModule,
     PreviewModule,
   ],

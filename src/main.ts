@@ -13,6 +13,7 @@ async function bootstrap() {
     .setDescription('Clone of the youtube api')
     .setVersion('1.0')
     .addTag('youtube')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, documentBuilder);
   SwaggerModule.setup('api', app, document);

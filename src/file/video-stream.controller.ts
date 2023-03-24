@@ -21,7 +21,7 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { JwtGuard } from 'src/common/guard/jwt.guard';
-import { VideoService } from './video.service';
+import { VideoStreamService } from './video-stream.service';
 import { PrivateVideoGuard } from './guards/private-video.guard';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
@@ -32,8 +32,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @ApiTags('Video')
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
-export class VideoController implements OnApplicationBootstrap {
-  constructor(private videoService: VideoService) {}
+export class VideoStreamController implements OnApplicationBootstrap {
+  constructor(private videoStreamService: VideoStreamService) {}
   onApplicationBootstrap() {}
 
   @Get('recent_videos')
@@ -41,7 +41,7 @@ export class VideoController implements OnApplicationBootstrap {
     @Query('count', new DefaultValuePipe(0), new ParseIntPipe())
     count: number,
   ) {
-    return this.videoService.getRecentVideosWithPhotos(count);
+    return this.videoStreamService.getRecentVideosWithPhotos(count);
   }
 
   @Get(':id')
@@ -49,7 +49,7 @@ export class VideoController implements OnApplicationBootstrap {
   getVideo(@Param('id') id: string, @Req() req: Request, @Res() res) {
     const video = req.video;
 
-    return this.videoService.getStream(
+    return this.videoStreamService.getStream(
       res,
       video.userId,
       parseInt(id, 10),
@@ -71,9 +71,9 @@ export class VideoController implements OnApplicationBootstrap {
     @Body() body: CreateVideoDto,
   ) {
     const user = req.user;
-    if (!files.video) throw new BadRequestException('video was not provaded');
+    if (!files?.video) throw new BadRequestException('video was not provided');
 
-    return this.videoService.upload(files, user.id, isPrivate, {
+    return this.videoStreamService.upload(files, user.id, isPrivate, {
       ...body,
     });
   }
@@ -83,7 +83,7 @@ export class VideoController implements OnApplicationBootstrap {
     @Param('id', new ParseIntPipe()) id: number,
     @Body() body: UpdateVideoDto,
   ) {
-    return this.videoService.update(id, { ...body });
+    return this.videoStreamService.update(id, { ...body });
   }
 
   @Delete(':id')
@@ -91,6 +91,6 @@ export class VideoController implements OnApplicationBootstrap {
     @Param('id', new ParseIntPipe()) id: number,
     @Req() req: Request,
   ) {
-    return this.videoService.delete(id, req.user.id);
+    return this.videoStreamService.delete(id, req.user.id);
   }
 }
