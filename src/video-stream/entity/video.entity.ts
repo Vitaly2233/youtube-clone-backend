@@ -1,5 +1,3 @@
-import { ParseBoolPipe } from '@nestjs/common';
-import { IsBoolean, IsString } from 'class-validator';
 import { User } from 'src/user/entity/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -22,7 +20,4 @@ export class Video {
 
   @ManyToOne(() => User, (user) => user.videos)
   user?: User;
-
-  @Column()
-  userId: number;
 }

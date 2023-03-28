@@ -25,10 +25,11 @@ export class UserService {
         .addSelect('user.password')
         .where({ username })
         .getOne();
+
     return this.userRepository.findOne({ where: { username } });
   }
   async findById(id: number) {
-    return this.userRepository.findOne(id);
+    // return this.userRepository.findOne(id);
   }
 
   async updateOne(userUpdate: User) {

@@ -8,8 +8,6 @@ import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../user/user.module';
 
 @Module({
-  providers: [AuthService, JwtStrategy],
-  controllers: [AuthController],
   imports: [
     forwardRef(() => UserModule),
     PassportModule,
@@ -20,6 +18,8 @@ import { UserModule } from '../user/user.module';
       }),
     }),
   ],
+  providers: [AuthService, JwtStrategy],
+  controllers: [AuthController],
   exports: [AuthService],
 })
 export class AuthModule {}

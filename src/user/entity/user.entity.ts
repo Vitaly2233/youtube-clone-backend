@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { Video } from 'src/file/entity/video.entity';
+import { Video } from 'src/video-stream/entity/video.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

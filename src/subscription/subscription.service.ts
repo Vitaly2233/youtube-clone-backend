@@ -42,8 +42,8 @@ export class SubscriptionService {
   }
 
   private async validateUnsubscription(id: number, userId: number) {
-    const subscription = await this.subscriptionRepository.findOne(id);
-    if (subscription.userId !== userId)
-      throw new ForbiddenException(`you can delete only your subscriptions`);
+    // const subscription = await this.subscriptionRepository.findOne(id);
+    // if (subscription.userId !== userId)
+    //   throw new ForbiddenException(`you can delete only your subscriptions`);
   }
 }

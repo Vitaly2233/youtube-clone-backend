@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import config from './common/config';
 import { UserModule } from './user/user.module';
-import { VideoStreamModule } from './file/video-stream.module';
+import { VideoStreamModule } from './video-stream/video-stream.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PreviewModule } from './preview/preview.module';
 
