@@ -8,6 +8,7 @@ import config from './common/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  app.setGlobalPrefix('api');
 
   const documentBuilder = new DocumentBuilder()
     .setTitle('Youtube')

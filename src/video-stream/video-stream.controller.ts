@@ -2,41 +2,45 @@ import {
   BadRequestException,
   Body,
   Controller,
-  DefaultValuePipe,
-  Delete,
   FileTypeValidator,
   Get,
+  Header,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
-  ParseIntPipe,
-  Patch,
   Post,
-  Query,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Headers,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { JwtGuard } from 'src/common/guard/jwt.guard';
 import { VideoStreamService } from './video-stream.service';
 import { UploadVideoDto } from './dto/upload-video.dto';
-import { UpdateVideoDto } from './dto/update-video.dto';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { UploadVideoPreviewDto } from './dto/upload-video-preview.dto';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiProduces,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UploadPreviewDto } from './dto/upload-preview.dto';
+import { Public } from '../common/decorator/public.decorator';
 
-@Controller('api/video-stream')
+@Controller('video-stream')
 @ApiTags('Video')
 @UseGuards(JwtGuard)
-@ApiBearerAuth()
 export class VideoStreamController {
   constructor(private videoStreamService: VideoStreamService) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('video'))
   @ApiConsumes('multipart/form-data')
+  @ApiBearerAuth()
   async uploadVideo(
     @UploadedFile(
       new ParseFilePipe({
@@ -63,6 +67,7 @@ export class VideoStreamController {
   @Post('upload/preview')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('preview'))
+  @ApiBearerAuth()
   uploadVideoPreview(
     @UploadedFile(
       new ParseFilePipe({
@@ -73,45 +78,45 @@ export class VideoStreamController {
       }),
     )
     preview: Express.Multer.File,
-    @Body() body: UploadVideoPreviewDto,
+    @Body() body: UploadPreviewDto,
   ) {
-    console.log(body);
+    if (!preview) throw new BadRequestException('preview is missing');
+
+    return this.videoStreamService.uploadPreview({ ...body, preview });
   }
 
-  @Get('recent_videos')
-  getRecentVideosWithPhotos(
-    @Query('count', new DefaultValuePipe(0), new ParseIntPipe())
-    count: number,
-  ) {
-    return this.videoStreamService.getRecentVideosWithPhotos(count);
+  @Get()
+  @ApiBearerAuth()
+  getUserVideos(@Req() req: Request) {
+    return this.videoStreamService.getUserVideos(req.user);
   }
 
-  // @Get(':id')
-  // @UseGuards(PrivateVideoGuard)
-  // getVideo(@Param('id') id: string, @Req() req: Request, @Res() res) {
-  //   const video = req.video;
-
-  //   return this.videoStreamService.getStream(
-  //     res,
-  //     video.userId,
-  //     parseInt(id, 10),
-  //     req.headers.range,
-  //   );
-  // }
-
-  @Patch(':id')
-  async update(
-    @Param('id', new ParseIntPipe()) id: number,
-    @Body() body: UpdateVideoDto,
+  @Get(':fileName')
+  @Public()
+  downloadVideo(
+    @Param('fileName') fileName: string,
+    @Headers() headers,
+    @Res() response: Response,
   ) {
-    return this.videoStreamService.update(id, { ...body });
+    return this.videoStreamService.streamVideo(fileName, headers, response);
   }
 
-  @Delete(':id')
-  async deleteVideo(
-    @Param('id', new ParseIntPipe()) id: number,
-    @Req() req: Request,
+  @Get('preview/:fileName')
+  @Public()
+  @Header('Content-Type', 'image/*')
+  @ApiProduces('image/*')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      type: 'string',
+      format: 'binary',
+    },
+  })
+  downloadPreview(
+    @Param('fileName') fileName: string,
+    @Res() response: Response,
   ) {
-    return this.videoStreamService.delete(id, req.user.id);
+    const file = this.videoStreamService.getPreviewStream(fileName);
+    file.pipe(response);
   }
 }

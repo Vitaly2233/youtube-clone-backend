@@ -14,7 +14,7 @@ import { JwtGuard } from 'src/common/guard/jwt.guard';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { SubscriptionService } from './subscription.service';
 
-@Controller('api/subscription')
+@Controller('subscription')
 @ApiTags('Subscription')
 @UseGuards(JwtGuard)
 @ApiBearerAuth()

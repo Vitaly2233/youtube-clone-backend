@@ -1,26 +1,29 @@
 import {
-  BadRequestException,
   ConflictException,
-  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
-  OnApplicationBootstrap,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createReadStream, existsSync, statSync, unlinkSync } from 'fs';
 import { Repository } from 'typeorm';
 import { UploadVideoDto } from './dto/upload-video.dto';
-import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video } from './entity/video.entity';
-import { PreviewService } from '../preview/preview.service';
 import * as mime from 'mime-types';
 import { mkdir, writeFile } from 'fs/promises';
+import { UploadPreviewDto } from './dto/upload-preview.dto';
+import { Preview } from './entity/preview.entity';
+import { User } from '../user/entity/user.entity';
+import { createReadStream, statSync } from 'fs';
+import { Response } from 'express';
+import { FileType } from './enum/file-type.enum';
 
 @Injectable()
 export class VideoStreamService {
   constructor(
-    @InjectRepository(Video) private videoRepository: Repository<Video>,
-    private previewService: PreviewService,
+    @InjectRepository(Video)
+    private readonly videoRepository: Repository<Video>,
+    @InjectRepository(Preview)
+    private readonly previewRepository: Repository<Preview>,
   ) {}
 
   async uploadVideo(userId: number, dto: UploadVideoDto) {
@@ -30,95 +33,106 @@ export class VideoStreamService {
     });
 
     try {
-      await mkdir(this.computeUsersPath(userId));
+      await mkdir(this.computeVideoPath());
     } catch (e) {}
-    const path = this.computeFilePath(userId, newVideo.id, dto.video.mimetype);
+    const path = this.computeVideoFilePath(newVideo.id, dto.video.mimetype);
     await writeFile(path, dto.video.buffer);
 
     return true;
   }
 
-  async getStream(response, userId: number, videoId: number, range?: string) {
-    // const path = this.computeFilePath(userId, videoId);
-    // const stat = statSync(path);
-    // const fileSize = stat.size;
-    // return this.getFileStream(fileSize, path, response, range);
+  async uploadPreview(dto: UploadPreviewDto) {
+    const videoId = dto.video;
+
+    const video = await this.videoRepository.findOne({
+      where: { id: videoId },
+      relations: ['preview'],
+    });
+
+    if (!video) throw new NotFoundException('video not found');
+    if (video.preview)
+      throw new ConflictException('video already has a preview');
+
+    const newPreview = await this.previewRepository.save(dto);
+    video.preview = newPreview;
+    await this.videoRepository.save(video);
+
+    try {
+      await mkdir(this.computePreviewPath());
+    } catch (e) {}
+    const path = this.comptePreviewFilePath(
+      newPreview.id,
+      dto.preview.mimetype,
+    );
+    await writeFile(path, dto.preview.buffer);
+
+    return true;
   }
 
-  private async getFileStream(
-    fileSize: number,
-    path: string,
-    response,
-    range?: string,
-  ) {
-    if (range) {
-      const parts = range.replace(/bytes=/, '').split('-');
+  async getUserVideos(user: User) {
+    return this.videoRepository.find({
+      where: { user: user.id },
+      relations: { preview: true },
+    });
+  }
+
+  streamVideo(fileName: string, headers, res: Response) {
+    const path = `${this.computeVideoPath()}/${fileName}`;
+    const { size } = statSync(path);
+    const videoRange = headers.range;
+    if (videoRange) {
+      const parts = videoRange.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-      if (start >= fileSize)
-        throw new HttpException('Range not appropriate', 416);
-
+      const end = parts[1] ? parseInt(parts[1], 10) : size - 1;
       const chunksize = end - start + 1;
-      const file = createReadStream(path, { start, end });
+      const readStreamFile = createReadStream(path, {
+        start,
+        end,
+        highWaterMark: 60,
+      });
       const head = {
-        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-        'Accept-Ranges': 'bytes',
+        'Content-Range': `bytes ${start}-${end}/${size}`,
         'Content-Length': chunksize,
-        'Content-Type': 'video/mp4',
       };
-
-      response.writeHead(206, head);
-      file.pipe(response);
+      res.writeHead(HttpStatus.PARTIAL_CONTENT, head);
+      readStreamFile.pipe(res);
     } else {
       const head = {
-        'Content-Length': fileSize,
-        'Content-Type': 'video/mp4',
+        'Content-Length': size,
       };
-      response.writeHead(200, head);
-      return createReadStream(path).pipe(response);
+      res.writeHead(HttpStatus.OK, head);
+      createReadStream(path).pipe(res);
     }
   }
 
-  async getById(id: number) {
-    if (!id) throw new BadRequestException('id is missing');
-    return this.videoRepository
-      .createQueryBuilder('video')
-      .where('video.id = :id', { id })
-      .getOne();
+  getPreviewStream(fileName: string) {
+    const path = `${this.computePreviewPath()}/${fileName}`;
+    try {
+      return createReadStream(path);
+    } catch (e) {
+      throw new NotFoundException('file not found');
+    }
   }
 
-  async getRecentVideosWithPhotos(count: number) {
-    if (count === 0) return [];
-    const videos = await this.videoRepository
-      .createQueryBuilder('video')
-      .leftJoinAndSelect('video.user', 'user')
-      .orderBy('video.uploadedAt')
-      // .where('video.isPrivate = false')
-      .take(count)
-      .getMany();
+  private computeVideoFilePath(fileId: number, mimetype: string) {
+    const fileName = mime.extension(mimetype);
+    return `${this.computeVideoPath()}/${fileId}.${fileName}`;
   }
 
-  async delete(id: number, userId: number) {
-    // const result = await this.videoRepository.delete({ id });
-    // if (result.affected === 0)
-    //   throw new NotFoundException('video was not found');
-    // unlinkSync(this.computeFilePath(userId, id));
+  private comptePreviewFilePath(fileId: number, mimetype: string) {
+    const fileName = mime.extension(mimetype);
+    return `${this.computePreviewPath()}/${fileId}.${fileName}`;
   }
 
-  async update(id: number, dto: UpdateVideoDto) {
-    return this.videoRepository.save({ ...dto, id });
+  private computeVideoPath() {
+    return `./uploads/videos`;
   }
 
-  private async createUserFolder(userId: number) {}
-
-  private computeFilePath(userId: number, fileId: number, mimetype: string) {
-    return `${this.computeUsersPath(userId)}/${fileId}.${mime.extension(
-      mimetype,
-    )}`;
+  private computePreviewPath() {
+    return `./uploads/previews`;
   }
 
-  private computeUsersPath(userId: number) {
-    return `./uploads/${userId}`;
+  private computeFileUrl(type: FileType) {
+    //TODO make computation more flexible by adding file type (video or preview)
   }
 }

@@ -1,5 +1,13 @@
 import { User } from 'src/user/entity/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Preview } from './preview.entity';
 
 @Entity()
 export class Video {
@@ -19,5 +27,9 @@ export class Video {
   uploadedAt?: Date;
 
   @ManyToOne(() => User, (user) => user.videos)
-  user?: User;
+  user?: User | number;
+
+  @OneToOne(() => Preview, (preview) => preview.video)
+  @JoinColumn()
+  preview?: Preview;
 }

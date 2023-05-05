@@ -5,7 +5,6 @@ import config from './common/config';
 import { UserModule } from './user/user.module';
 import { VideoStreamModule } from './video-stream/video-stream.module';
 import { SubscriptionModule } from './subscription/subscription.module';
-import { PreviewModule } from './preview/preview.module';
 
 @Module({
   imports: [
@@ -31,7 +30,6 @@ import { PreviewModule } from './preview/preview.module';
     AuthModule,
     VideoStreamModule,
     SubscriptionModule,
-    PreviewModule,
   ],
 })
 export class AppModule {}

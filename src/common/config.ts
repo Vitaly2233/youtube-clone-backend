@@ -7,6 +7,7 @@ configuration({ path: root('../../') });
 export default {
   SERVER_PORT: process.env.SERVER_PORT || 5001,
   SERVER_HOST: process.env.SERVER_HOST,
+  SERVER_URL: process.env.SERVER_URL,
   DB: {
     DB_NAME: process.env.DATABASE_NAME,
     DB_PORT: parseInt(process.env.DATABASE_PORT, 10),
