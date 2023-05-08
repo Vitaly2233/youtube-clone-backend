@@ -15,6 +15,8 @@ import {
   UseGuards,
   UseInterceptors,
   Headers,
+  Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
@@ -116,7 +118,19 @@ export class VideoStreamController {
     @Param('fileName') fileName: string,
     @Res() response: Response,
   ) {
-    const file = this.videoStreamService.getPreviewStream(fileName);
+    const file = this.videoStreamService.getPreviewFile(fileName);
     file.pipe(response);
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  deleteVideo(@Param('id', ParseIntPipe) id: number) {
+    return this.videoStreamService.deleteVideo(id);
+  }
+
+  @Delete('preview/:id')
+  @ApiBearerAuth()
+  deletePreview(@Param('id', ParseIntPipe) id: number) {
+    return this.videoStreamService.deletePreview(id);
   }
 }

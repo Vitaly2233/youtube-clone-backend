@@ -13,10 +13,16 @@ export class Preview {
   @IsOptional()
   name?: string;
 
+  @Column({ default: null })
+  link?: string;
+
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   uploadedAt?: Date;
 
-  @OneToOne(() => Video, (video) => video.preview)
+  @OneToOne(() => Video, (video) => video.preview, {
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
+  })
   @IsNumber()
   video: Video | number;
 }

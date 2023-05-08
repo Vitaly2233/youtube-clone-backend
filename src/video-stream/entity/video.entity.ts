@@ -23,6 +23,9 @@ export class Video {
   @Column({ default: false })
   isPrivate: boolean;
 
+  @Column({ default: null })
+  link?: string;
+
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   uploadedAt?: Date;
 

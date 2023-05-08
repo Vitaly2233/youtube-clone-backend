@@ -50,8 +50,10 @@ export class AuthService {
   async validateUsernameAndPassword(username: string, password: string) {
     const user = await this.userService.findOneByUsername(username, true);
     if (!user) throw new NotFoundException('user does not exist');
+
     const isEqual: boolean = await bcrypt.compare(password, user.password);
     if (!isEqual) throw new ForbiddenException('wrong password');
+
     return user;
   }
 }
