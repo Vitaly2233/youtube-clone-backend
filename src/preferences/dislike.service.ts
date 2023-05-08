@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entity/user.entity';
 import { VideoStreamService } from '../video-stream/video-stream.service';
 import { Dislike } from './entity/dislike.entity';
+import { LikeService } from './like.service';
 
 @Injectable()
 export class DislikeService {
@@ -12,21 +19,24 @@ export class DislikeService {
     private readonly dislikeRepository: Repository<Dislike>,
 
     private readonly videoStreamService: VideoStreamService,
+
+    @Inject(forwardRef(() => LikeService))
+    private readonly likeService: LikeService,
   ) {}
 
   async toggleDislike(videoId: number, user: User) {
-    const [foundDislike, foundVideo] = await Promise.all([
-      this.dislikeRepository.findOne({
-        where: { user: user.id, video: videoId },
-      }),
+    const [alreadyLiked, alreadyDisliked, foundVideo] = await Promise.all([
+      this.likeService.isAlreadyLiked(videoId, user.id),
+      this.isAlreadyDisliked(videoId, user.id),
       this.videoStreamService.findOne({
         where: { id: videoId },
       }),
     ]);
 
+    if (alreadyLiked) throw new ConflictException('video is already liked');
     if (!foundVideo) throw new NotFoundException('video was not found');
 
-    if (foundDislike) {
+    if (alreadyDisliked) {
       await this.dislikeRepository.delete({ user: user.id, video: videoId });
       foundVideo.likeCount--;
     } else {
@@ -34,5 +44,11 @@ export class DislikeService {
       foundVideo.likeCount++;
     }
     await this.videoStreamService.saveEntity(foundVideo);
+  }
+
+  async isAlreadyDisliked(videoId: number, userId: number) {
+    return this.dislikeRepository.findOne({
+      where: { user: userId, video: videoId },
+    });
   }
 }
