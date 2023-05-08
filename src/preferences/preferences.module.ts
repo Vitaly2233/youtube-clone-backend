@@ -4,7 +4,7 @@ import { PreferencesController } from './preferences.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Like } from './entity/like.entity';
 import { Dislike } from './entity/dislike.entity';
-import { VideoStreamModule } from '../video-stream/video-stream.module';
+import { VideoStreamModule } from '../video/video.module';
 import { DislikeService } from './dislike.service';
 
 @Module({

@@ -1,4 +1,4 @@
-import { Video } from 'src/video-stream/entity/video.entity';
+import { Video } from 'src/video/entity/video.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Dislike } from '../../preferences/entity/dislike.entity';
 import { Like } from '../../preferences/entity/like.entity';

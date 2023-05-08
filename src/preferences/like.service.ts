@@ -8,7 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entity/user.entity';
-import { VideoStreamService } from '../video-stream/video-stream.service';
+import { VideoService } from '../video/services/video.service';
 import { DislikeService } from './dislike.service';
 import { Like } from './entity/like.entity';
 
@@ -18,7 +18,7 @@ export class LikeService {
     @InjectRepository(Like)
     private readonly likeRepository: Repository<Like>,
 
-    private readonly videoStreamService: VideoStreamService,
+    private readonly videoStreamService: VideoService,
 
     @Inject(forwardRef(() => DislikeService))
     private readonly dislikeService: DislikeService,

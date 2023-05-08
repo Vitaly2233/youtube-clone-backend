@@ -1,4 +1,4 @@
-export enum FileType {
+export enum EFileType {
   video = 'video',
   preview = 'preview',
 }

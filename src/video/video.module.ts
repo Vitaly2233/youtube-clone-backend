@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
-import { VideoStreamService } from './video-stream.service';
-import { VideoStreamController } from './video-stream.controller';
+import { VideoStreamController } from './video.controller';
 import { Video } from './entity/video.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from 'src/user/user.module';
 import { Preview } from './entity/preview.entity';
+import { ComputationService } from './services/computation.service';
+import { PreviewService } from './services/preview.service';
+import { VideoService } from './services/video.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Video, Preview]), UserModule],
-  providers: [VideoStreamService],
+  providers: [VideoService, PreviewService, ComputationService],
   controllers: [VideoStreamController],
-  exports: [VideoStreamService],
+  exports: [VideoService],
 })
 export class VideoStreamModule {}

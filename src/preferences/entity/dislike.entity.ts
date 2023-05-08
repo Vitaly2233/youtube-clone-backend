@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../user/entity/user.entity';
-import { Video } from '../../video-stream/entity/video.entity';
+import { Video } from '../../video/entity/video.entity';
 
 @Entity()
 export class Dislike {

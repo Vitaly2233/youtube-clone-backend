@@ -21,7 +21,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { JwtGuard } from 'src/common/guard/jwt.guard';
-import { VideoStreamService } from './video-stream.service';
 import { UploadVideoDto } from './dto/upload-video.dto';
 import {
   ApiBearerAuth,
@@ -32,12 +31,17 @@ import {
 } from '@nestjs/swagger';
 import { UploadPreviewDto } from './dto/upload-preview.dto';
 import { Public } from '../common/decorator/public.decorator';
+import { VideoService } from './services/video.service';
+import { PreviewService } from './services/preview.service';
 
 @Controller('video-stream')
 @ApiTags('Video')
 @UseGuards(JwtGuard)
 export class VideoStreamController {
-  constructor(private videoStreamService: VideoStreamService) {}
+  constructor(
+    private videoStreamService: VideoService,
+    private readonly previewService: PreviewService,
+  ) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('video'))
@@ -84,7 +88,7 @@ export class VideoStreamController {
   ) {
     if (!preview) throw new BadRequestException('preview is missing');
 
-    return this.videoStreamService.uploadPreview({ ...body, preview });
+    return this.previewService.uploadPreview({ ...body, preview });
   }
 
   @Get()
@@ -118,7 +122,7 @@ export class VideoStreamController {
     @Param('fileName') fileName: string,
     @Res() response: Response,
   ) {
-    const file = this.videoStreamService.getPreviewFile(fileName);
+    const file = this.previewService.getPreviewFile(fileName);
     file.pipe(response);
   }
 
@@ -131,6 +135,6 @@ export class VideoStreamController {
   @Delete('preview/:id')
   @ApiBearerAuth()
   deletePreview(@Param('id', ParseIntPipe) id: number) {
-    return this.videoStreamService.deletePreview(id);
+    return this.previewService.deletePreview(id);
   }
 }
