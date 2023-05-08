@@ -4,9 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Dislike } from '../../preferences/entity/dislike.entity';
+import { Like } from '../../preferences/entity/like.entity';
 import { Preview } from './preview.entity';
 
 @Entity()
@@ -29,10 +32,22 @@ export class Video {
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   uploadedAt?: Date;
 
+  @Column()
+  likeCount: number;
+
+  @Column()
+  dislikeCount: number;
+
   @ManyToOne(() => User, (user) => user.videos)
   user?: User | number;
 
   @OneToOne(() => Preview, (preview) => preview.video)
   @JoinColumn()
   preview?: Preview;
+
+  @OneToMany(() => Like, (like) => like.video)
+  likes: Like[] | number[];
+
+  @OneToMany(() => Dislike, (dislike) => dislike.video)
+  dislikes: Dislike[] | number[];
 }

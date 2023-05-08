@@ -18,15 +18,18 @@ import { Response } from 'express';
 import { FileType } from './enum/file-type.enum';
 import config from '../common/config';
 import { getFilePathByName } from '../common/helpers/get-file-path-by-name';
+import { EntityService } from '../common/abstract/entity-service.abstract';
 
 @Injectable()
-export class VideoStreamService {
+export class VideoStreamService extends EntityService<Video> {
   constructor(
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
     @InjectRepository(Preview)
     private readonly previewRepository: Repository<Preview>,
-  ) {}
+  ) {
+    super(videoRepository);
+  }
 
   async uploadVideo(userId: number, dto: UploadVideoDto) {
     const newVideo = await this.videoRepository.save({

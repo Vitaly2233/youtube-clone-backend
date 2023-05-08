@@ -10,5 +10,6 @@ import { Preview } from './entity/preview.entity';
   imports: [TypeOrmModule.forFeature([Video, Preview]), UserModule],
   providers: [VideoStreamService],
   controllers: [VideoStreamController],
+  exports: [VideoStreamService],
 })
 export class VideoStreamModule {}
