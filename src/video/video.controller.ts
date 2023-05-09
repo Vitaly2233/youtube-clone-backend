@@ -17,6 +17,7 @@ import {
   Headers,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
@@ -33,6 +34,7 @@ import { UploadPreviewDto } from './dto/upload-preview.dto';
 import { Public } from '../common/decorator/public.decorator';
 import { VideoService } from './services/video.service';
 import { PreviewService } from './services/preview.service';
+import { GetWatchHistoryQueryDto } from './dto/get-watch-history.query.dto';
 
 @Controller('video-stream')
 @ApiTags('Video')
@@ -91,20 +93,25 @@ export class VideoStreamController {
     return this.previewService.uploadPreview({ ...body, preview });
   }
 
+  @Post(':videoId/watched')
+  @ApiBearerAuth()
+  makeVideoWatched(@Param('videoId') videoId: number, @Req() req: Request) {
+    return this.videoStreamService.makeVideoWatched(videoId, req.user);
+  }
+
   @Get()
   @ApiBearerAuth()
   getUserVideos(@Req() req: Request) {
     return this.videoStreamService.getUserVideos(req.user);
   }
 
-  @Get(':fileName')
-  @Public()
-  downloadVideo(
-    @Param('fileName') fileName: string,
-    @Headers() headers,
-    @Res() response: Response,
+  @Get('watch_history')
+  @ApiBearerAuth()
+  getWatchHistory(
+    @Req() req: Request,
+    @Query() query: GetWatchHistoryQueryDto,
   ) {
-    return this.videoStreamService.streamVideo(fileName, headers, response);
+    return this.videoStreamService.getWatchHistory(req.user, query);
   }
 
   @Get('preview/:fileName')
@@ -124,6 +131,16 @@ export class VideoStreamController {
   ) {
     const file = this.previewService.getPreviewFile(fileName);
     file.pipe(response);
+  }
+
+  @Get(':fileName')
+  @Public()
+  downloadVideo(
+    @Param('fileName') fileName: string,
+    @Headers() headers,
+    @Res() response: Response,
+  ) {
+    return this.videoStreamService.streamVideo(fileName, headers, response);
   }
 
   @Delete(':id')

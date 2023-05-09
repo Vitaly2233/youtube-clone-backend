@@ -1,8 +1,10 @@
 import {
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -10,6 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtGuard } from '../common/guard/jwt.guard';
 import { DislikeService } from './dislike.service';
+import { GetAllLikedVideosQueryDto } from './dto/get-all-liked-videos.query.dto';
 import { LikeService } from './like.service';
 
 @Controller('preferences')
@@ -36,5 +39,13 @@ export class PreferencesController {
     @Req() req: Request,
   ) {
     return this.dislikeService.toggleDislike(videoId, req.user);
+  }
+
+  @Get('all_liked_videos')
+  getAllLikedVideos(
+    @Req() req: Request,
+    @Query() query: GetAllLikedVideosQueryDto,
+  ) {
+    return this.likesService.getAllLikedVideos(req.user, query);
   }
 }

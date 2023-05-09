@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { User } from '../user/entity/user.entity';
 import { VideoService } from '../video/services/video.service';
 import { DislikeService } from './dislike.service';
+import { GetAllLikedVideosQueryDto } from './dto/get-all-liked-videos.query.dto';
 import { Like } from './entity/like.entity';
 
 @Injectable()
@@ -50,6 +51,17 @@ export class LikeService {
   async isAlreadyLiked(videoId: number, userId: number) {
     return this.likeRepository.findOne({
       where: { user: userId, video: videoId },
+    });
+  }
+
+  async getAllLikedVideos(user: User, query: GetAllLikedVideosQueryDto) {
+    if (query.take > 50) query.take = 50;
+
+    return this.likeRepository.find({
+      where: { user },
+      take: query.take,
+      skip: query.skip,
+      relations: ['video'],
     });
   }
 }

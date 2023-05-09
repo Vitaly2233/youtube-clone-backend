@@ -7,9 +7,13 @@ import { Preview } from './entity/preview.entity';
 import { ComputationService } from './services/computation.service';
 import { PreviewService } from './services/preview.service';
 import { VideoService } from './services/video.service';
+import { WatchHistoryItem } from './entity/watch-history-item';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Video, Preview]), UserModule],
+  imports: [
+    TypeOrmModule.forFeature([Video, Preview, WatchHistoryItem]),
+    UserModule,
+  ],
   providers: [VideoService, PreviewService, ComputationService],
   controllers: [VideoStreamController],
   exports: [VideoService],

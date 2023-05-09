@@ -1,5 +1,7 @@
 import { User } from 'src/user/entity/user.entity';
 import {
+  BeforeInsert,
+  BeforeRemove,
   Column,
   Entity,
   JoinColumn,
@@ -11,6 +13,7 @@ import {
 import { Dislike } from '../../preferences/entity/dislike.entity';
 import { Like } from '../../preferences/entity/like.entity';
 import { Preview } from './preview.entity';
+import { WatchHistoryItem } from './watch-history-item';
 
 @Entity()
 export class Video {
@@ -32,11 +35,14 @@ export class Video {
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   uploadedAt?: Date;
 
-  @Column()
-  likeCount: number;
+  @Column({ default: '0' })
+  likeCount?: number;
 
-  @Column()
-  dislikeCount: number;
+  @Column({ default: '0' })
+  dislikeCount?: number;
+
+  @Column({ default: '0' })
+  viewsCount?: number;
 
   @ManyToOne(() => User, (user) => user.videos)
   user?: User | number;
@@ -45,9 +51,22 @@ export class Video {
   @JoinColumn()
   preview?: Preview;
 
-  @OneToMany(() => Like, (like) => like.video)
+  @OneToMany(() => Like, (like) => like.video, { cascade: true })
   likes: Like[] | number[];
 
-  @OneToMany(() => Dislike, (dislike) => dislike.video)
+  @OneToMany(() => Dislike, (dislike) => dislike.video, { cascade: true })
   dislikes: Dislike[] | number[];
+
+  @OneToMany(() => WatchHistoryItem, (item) => item.video, { cascade: true })
+  watchHistoryItems: WatchHistoryItem[] | number[];
+
+  @BeforeRemove()
+  async beforeRemove() {
+    console.log('BEFORE REMOVE');
+  }
+
+  @BeforeInsert()
+  async beforeInsert() {
+    console.log('HAHHAHAHAHAHAHAHAH', this);
+  }
 }

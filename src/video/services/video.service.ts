@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   forwardRef,
   HttpStatus,
   Inject,
@@ -18,12 +17,17 @@ import { EntityService } from '../../common/abstract/entity-service.abstract';
 import { UploadVideoDto } from '../dto/upload-video.dto';
 import { EFileType } from '../enum/file-type.enum';
 import { User } from '../../user/entity/user.entity';
+import { WatchHistoryItem } from '../entity/watch-history-item';
+import { GetWatchHistoryQueryDto } from '../dto/get-watch-history.query.dto';
 
 @Injectable()
 export class VideoService extends EntityService<Video> {
   constructor(
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
+
+    @InjectRepository(WatchHistoryItem)
+    private readonly watchHistoryRepository: Repository<WatchHistoryItem>,
 
     @Inject(forwardRef(() => PreviewService))
     private readonly previewService: PreviewService,
@@ -63,10 +67,29 @@ export class VideoService extends EntityService<Video> {
     return true;
   }
 
+  async makeVideoWatched(videoId: number, user: User) {
+    const video = await this.watchHistoryRepository.findOne({
+      where: { user: user, video: videoId },
+    });
+    if (!video) {
+      await this.watchHistoryRepository.save({ user: user, video: videoId });
+    }
+  }
+
   async getUserVideos(user: User) {
     return this.videoRepository.find({
       where: { user: user.id },
       relations: { preview: true },
+    });
+  }
+
+  async getWatchHistory(user: User, query: GetWatchHistoryQueryDto) {
+    if (query.take > 50) query.take = 50;
+
+    return this.watchHistoryRepository.find({
+      where: { user },
+      ...query,
+      relations: ['video'],
     });
   }
 
