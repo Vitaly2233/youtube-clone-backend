@@ -1,6 +1,8 @@
-import { IsString, Min } from 'class-validator';
+import { PickType } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
+import { User } from '../../user/entity/user.entity';
 
-export class LoginRequestDto {
+export class LoginRequestDto extends PickType(User, ['username', 'password']) {
   @IsString()
   username: string;
 

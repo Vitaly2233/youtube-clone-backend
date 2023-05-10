@@ -1,14 +1,37 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
+import { JwtGuard } from '../common/guard/jwt.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
-@Controller('api/user')
+@Controller('user')
 @ApiTags('User')
+@UseGuards(JwtGuard)
+@ApiBearerAuth()
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Get('username/:username')
-  async getByUsername(@Param('username') username: string) {
-    return this.userService.findOneByUsername(username);
+  @Get()
+  async getAll() {
+    return this.userService.getAll();
+  }
+
+  @Patch()
+  updateUser(@Body() dto: UpdateUserDto, @Req() req: Request) {
+    return this.userService.updateUser(req.user, dto);
+  }
+
+  @Delete()
+  deleteUser(@Req() req: Request) {
+    return this.userService.deleteUser(req.user.id);
   }
 }

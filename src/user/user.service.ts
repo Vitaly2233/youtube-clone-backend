@@ -2,20 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterRequestDto } from 'src/auth/dto/register-request.dto';
 import { Repository } from 'typeorm';
+import { EntityService } from '../common/abstract/entity-service.abstract';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entity/user.entity';
 
 @Injectable()
-export class UserService {
+export class UserService extends EntityService<User> {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-  ) {}
-
-  async create({ username, password }: RegisterRequestDto) {
-    const newUser = this.userRepository.create({
-      password,
-      username,
-    });
-    return this.userRepository.save(newUser);
+  ) {
+    super(userRepository);
   }
 
   async findOneByUsername(username: string, showPassword?: boolean) {
@@ -28,20 +24,24 @@ export class UserService {
 
     return this.userRepository.findOne({ where: { username } });
   }
-  async findById(id: number) {
-    // return this.userRepository.findOne(id);
+
+  async create({ username, password }: RegisterRequestDto) {
+    const newUser = this.userRepository.create({
+      password,
+      username,
+    });
+    return this.userRepository.save(newUser);
   }
 
-  async updateOne(userUpdate: User) {
-    await this.userRepository.save({ ...userUpdate });
+  async getAll() {
+    return this.userRepository.find();
   }
 
-  async updateByIds(ids: number[], updateData: User) {
-    return this.userRepository
-      .createQueryBuilder()
-      .update(User)
-      .set({ ...updateData })
-      .where('id IN (:...ids)', { ids })
-      .execute();
+  async updateUser(user: User, dto: UpdateUserDto) {
+    return this.userRepository.save({ id: user.id, ...dto });
+  }
+
+  async deleteUser(userId: number) {
+    return this.userRepository.delete({ id: userId });
   }
 }

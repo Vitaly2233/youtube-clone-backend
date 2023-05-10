@@ -1,3 +1,4 @@
+import { IsString } from 'class-validator';
 import { Video } from 'src/video/entity/video.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Dislike } from '../../preferences/entity/dislike.entity';
@@ -9,8 +10,21 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @IsString()
   @Column({ unique: true })
   username: string;
+
+  @IsString()
+  @Column({ nullable: true })
+  firstName: string;
+
+  @IsString()
+  @Column({ nullable: true })
+  lastName: string;
+
+  @IsString()
+  @Column({ nullable: true })
+  birthDate: Date;
 
   @Column({ select: false })
   password: string;

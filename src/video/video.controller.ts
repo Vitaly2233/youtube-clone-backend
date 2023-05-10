@@ -36,7 +36,7 @@ import { VideoService } from './services/video.service';
 import { PreviewService } from './services/preview.service';
 import { GetWatchHistoryQueryDto } from './dto/get-watch-history.query.dto';
 
-@Controller('video-stream')
+@Controller('video')
 @ApiTags('Video')
 @UseGuards(JwtGuard)
 export class VideoStreamController {
