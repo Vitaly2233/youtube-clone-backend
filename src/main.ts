@@ -28,5 +28,6 @@ async function bootstrap() {
   });
 
   await app.listen(config.SERVER_PORT);
+  console.log('Running on', config.SERVER_URL);
 }
 bootstrap();

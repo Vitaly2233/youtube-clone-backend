@@ -7,9 +7,13 @@ export class WatchHistoryItem {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @ManyToOne(() => User, (user) => user.watchHistoryItems)
+  @ManyToOne(() => User, (user) => user.watchHistoryItems, {
+    onDelete: 'CASCADE',
+  })
   user: User | number;
 
-  @ManyToOne(() => Video, (video) => video.watchHistoryItems)
+  @ManyToOne(() => Video, (video) => video.watchHistoryItems, {
+    onDelete: 'CASCADE',
+  })
   video: Video | number;
 }

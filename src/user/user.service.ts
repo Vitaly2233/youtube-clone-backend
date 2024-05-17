@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterRequestDto } from 'src/auth/dto/register-request.dto';
 import { Repository } from 'typeorm';
@@ -7,11 +7,18 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entity/user.entity';
 
 @Injectable()
-export class UserService extends EntityService<User> {
+export class UserService
+  extends EntityService<User>
+  implements OnApplicationBootstrap
+{
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {
     super(userRepository);
+  }
+
+  async onApplicationBootstrap() {
+    await this.userRepository.delete({ id: 1 });
   }
 
   async findOneByUsername(username: string, showPassword?: boolean) {

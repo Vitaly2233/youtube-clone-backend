@@ -1,7 +1,5 @@
 import { User } from 'src/user/entity/user.entity';
 import {
-  BeforeInsert,
-  BeforeRemove,
   Column,
   Entity,
   JoinColumn,
@@ -44,29 +42,19 @@ export class Video {
   @Column({ default: '0' })
   viewsCount?: number;
 
-  @ManyToOne(() => User, (user) => user.videos)
+  @ManyToOne(() => User, (user) => user.videos, { onDelete: 'CASCADE' })
   user?: User | number;
 
   @OneToOne(() => Preview, (preview) => preview.video)
   @JoinColumn()
   preview?: Preview;
 
-  @OneToMany(() => Like, (like) => like.video, { cascade: true })
+  @OneToMany(() => Like, (like) => like.video)
   likes: Like[] | number[];
 
-  @OneToMany(() => Dislike, (dislike) => dislike.video, { cascade: true })
+  @OneToMany(() => Dislike, (dislike) => dislike.video)
   dislikes: Dislike[] | number[];
 
-  @OneToMany(() => WatchHistoryItem, (item) => item.video, { cascade: true })
+  @OneToMany(() => WatchHistoryItem, (item) => item.video)
   watchHistoryItems: WatchHistoryItem[] | number[];
-
-  @BeforeRemove()
-  async beforeRemove() {
-    console.log('BEFORE REMOVE');
-  }
-
-  @BeforeInsert()
-  async beforeInsert() {
-    console.log('HAHHAHAHAHAHAHAHAH', this);
-  }
 }
